@@ -134,64 +134,152 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget buildKostTile(KostData kostData) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      tileColor: Colors.white,
-      shape: RoundedRectangleBorder(
+ Widget buildKostTile(KostData kostData) {
+  return InkWell(
+    onTap: () {
+      navigateToDetailScreen(kostData);
+    },
+    child: Container(
+      padding: EdgeInsets.all(10),
+      margin: EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        side: BorderSide(color: Colors.grey.shade300),
+        border: Border.all(color: Colors.grey.shade300),
       ),
-      title: Text(
-        kostData.name,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-      ),
-      subtitle: Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Gambar di atas teks
+          Container(
+            width: double.infinity,
+            height: 150,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                kostData.image,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
+          // Teks
+          Text(
+            kostData.name,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          SizedBox(height: 5),
           Text(
             'Rp ${kostData.price.toString()}',
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
           ),
-          Text(
-            kostData.description,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-          ),
         ],
       ),
-      leading: Image.network(
-        kostData.image,
-        width: 40,
-        height: 40,
-        fit: BoxFit.cover,
-      ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget buildMakananTile(MakananData makananData) {
-    return ListTile(
-      title: Text(
-        makananData.name,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+Widget buildMakananTile(MakananData makananData) {
+  return InkWell(
+    onTap: () {
+      navigateToDetailScreen(makananData);
+    },
+    child: Container(
+      padding: EdgeInsets.all(10),
+      margin: EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
       ),
-      subtitle: Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Rp ${makananData.price.toString()}}',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
+          // Gambar di atas teks
+          Container(
+            width: double.infinity,
+            height: 150,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                makananData.image,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
+          SizedBox(height: 10),
+          // Teks
           Text(
-            makananData.description,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+            makananData.name,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          SizedBox(height: 5),
+          Text(
+            'Rp ${makananData.price.toString()}',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
           ),
         ],
       ),
-      leading: Image.network(
-        makananData.image,
-        width: 40,
-        height: 40,
-        fit: BoxFit.cover,
+    ),
+  );
+}
+
+void navigateToDetailScreen(dynamic data) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => DetailScreen(data: data),
+    ),
+  );
+}
+}
+
+
+class DetailScreen extends StatelessWidget {
+  final dynamic data;
+
+  DetailScreen({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Detail'),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Gambar di atas teks
+            Container(
+              width: double.infinity,
+              height: 200,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  data.image,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            // Teks
+            Text(
+              data.name,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Rp ${data.price.toString()}',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 8),
+            Text(
+              data.description,
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+          ],
+        ),
       ),
     );
   }

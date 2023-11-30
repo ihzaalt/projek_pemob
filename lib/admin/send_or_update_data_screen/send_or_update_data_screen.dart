@@ -7,16 +7,17 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_firebase_crud_app/models/kost_data.dart';
 import 'package:flutter_firebase_crud_app/models/makanan_data.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_storage/firebase_storage.dart';
 
 class SendOrUpdateData extends StatefulWidget {
-  final String name;
-  final String price;
-  final String description;
-  final String image;
+  String name;
+  String price;
+  String description;
+  String image;
   final String id;
   final String? collection;
 
-  const SendOrUpdateData({
+  SendOrUpdateData({
     this.name = '',
     this.price = '',
     this.description = '',
@@ -52,65 +53,143 @@ class _SendOrUpdateDataState extends State<SendOrUpdateData> {
     super.dispose();
   }
 
- Future<void> _pickImage() async {
-  if (kIsWeb) {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
+  Future<void> _pickImage() async {
+    if (kIsWeb) {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
 
-    setState(() {
-      if (result != null && result.files.isNotEmpty) {
-        Uint8List uint8list = result.files.single.bytes!;
-        _image = File.fromRawPath(uint8list);
-      }
-    });
-  } else if (Platform.isAndroid || Platform.isIOS) {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      setState(() {
+        if (result != null && result.files.isNotEmpty) {
+          Uint8List uint8list = result.files.single.bytes!;
+          _image = File.fromRawPath(uint8list);
+        }
+      });
+    } else if (Platform.isAndroid || Platform.isIOS) {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      }
-    });
-  }
-}
-
-
-  Future<void> submitData() async {
-  final jsonData = {
-    'name': nameController.text,
-    'price': priceController.text,
-    'description': descriptionController.text,
-    'image': _image != null ? _image!.path : '',
-    'id': widget.id.isNotEmpty ? widget.id : null,
-  };
-
-  if (widget.collection == 'kosts') {
-    final dataDoc = FirebaseFirestore.instance.collection('kosts').doc(widget.id.isNotEmpty ? widget.id : null);
-    await dataDoc.set(KostData.fromJson(jsonData).toJson() as Map<String, dynamic>);
-  } else if (widget.collection == 'makanans') {
-    final dataDoc = FirebaseFirestore.instance.collection('makanans').doc(widget.id.isNotEmpty ? widget.id : null);
-    await dataDoc.set(MakananData.fromJson(jsonData).toJson() as Map<String, dynamic>);
+      setState(() {
+        if (pickedFile != null) {
+          _image = File(pickedFile.path);
+        }
+      });
+    }
   }
 
-  nameController.text = '';
-  priceController.text = '';
-  descriptionController.text = '';
-  _image = null;
-  showProgressIndicator = false;
-  setState(() {});
-}
+  Future<void> createData() async {
+    try {
+      String newName = nameController.text;
+      String newPrice = priceController.text;
+      String newDescription = descriptionController.text;
+      String newImage = '';
 
+      if (_image != null) {
+        String imagePath = 'your_storage_path/${DateTime.now().millisecondsSinceEpoch}';
+        UploadTask task = FirebaseStorage.instance.ref().child(imagePath).putFile(_image!);
+
+        TaskSnapshot snapshot = await task;
+        newImage = await snapshot.ref.getDownloadURL() ?? '';
+      }
+
+      dynamic newData;
+
+      if (widget.collection == 'kosts') {
+        newData = KostData(
+          name: newName,
+          price: newPrice,
+          description: newDescription,
+          image: newImage,
+          id: '',
+        );
+      } else if (widget.collection == 'makanans') {
+        newData = MakananData(
+          name: newName,
+          price: newPrice,
+          description: newDescription,
+          image: newImage,
+          id: '',
+        );
+      }
+
+      await FirebaseFirestore.instance.collection(widget.collection!).add(newData.toJson());
+
+      clearFormAndNavigateBack();
+    } catch (e) {
+      print('Error creating data: $e');
+    }
+  }
+
+
+  Future<void> updateData() async {
+    try {
+      String newName = nameController.text;
+      String newPrice = priceController.text;
+      String newDescription = descriptionController.text;
+      String newImage = widget.image ?? '';
+
+      if (_image != null) {
+        String imagePath = 'your_storage_path/${DateTime.now().millisecondsSinceEpoch}';
+        UploadTask task = FirebaseStorage.instance.ref().child(imagePath).putFile(_image!);
+
+        TaskSnapshot snapshot = await task;
+        newImage = await snapshot.ref.getDownloadURL() ?? '';
+      }
+
+      dynamic newData;
+
+      if (widget.collection == 'kosts') {
+        newData = KostData(
+          name: newName,
+          price: newPrice,
+          description: newDescription,
+          image: newImage,
+          id: widget.id.isNotEmpty ? widget.id : '',
+        );
+      } else if (widget.collection == 'makanans') {
+        newData = MakananData(
+          name: newName,
+          price: newPrice,
+          description: newDescription,
+          image: newImage,
+          id: widget.id.isNotEmpty ? widget.id : '',
+        );
+      }
+
+      if (widget.id.isNotEmpty) {
+        final dataDoc = FirebaseFirestore.instance.collection(widget.collection!).doc(widget.id);
+        await dataDoc.update(newData.toJson());
+      }
+
+      clearFormAndNavigateBack();
+    } catch (e) {
+      print('Error updating data: $e');
+    }
+  }
+
+  void clearFormAndNavigateBack() {
+    nameController.clear();
+    priceController.clear();
+    descriptionController.clear();
+    setState(() {
+      _image = null;
+      showProgressIndicator = false;
+    });
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.id.isEmpty ? 'Add Data' : 'Update Data'),
         backgroundColor: Colors.green.shade900,
         centerTitle: true,
+        title: Text(
+          'Send Data',
+          style: TextStyle(fontWeight: FontWeight.w300),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20).copyWith(top: 60, bottom: 200),
+        padding:
+            EdgeInsets.symmetric(horizontal: 20).copyWith(top: 60, bottom: 200),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -120,60 +199,71 @@ class _SendOrUpdateDataState extends State<SendOrUpdateData> {
             ),
             TextField(
               controller: nameController,
-              decoration: InputDecoration(hintText: 'Enter name'),
+              decoration: InputDecoration(hintText: ''),
             ),
-            SizedBox(height: 20),
+            SizedBox(
+              height: 20,
+            ),
             Text(
               'Price',
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
             TextField(
               controller: priceController,
-              decoration: InputDecoration(hintText: 'Enter price'),
+              decoration: InputDecoration(hintText: ''),
             ),
-            SizedBox(height: 20),
+            SizedBox(
+              height: 20,
+            ),
             Text(
               'Description',
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
             TextField(
               controller: descriptionController,
-              decoration: InputDecoration(hintText: 'Enter description'),
+              decoration:
+                  InputDecoration(hintText: ''),
             ),
-            SizedBox(height: 20),
+            SizedBox(
+              height: 20,
+            ),
             Text(
               'Image',
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
+            SizedBox(height: 10),
             _image != null
                 ? Image.file(
                     _image!,
-                    height: 100,
-                    width: 100,
+                    height: 150,
+                    width: 150,
                     fit: BoxFit.cover,
                   )
-                : SizedBox(
-                    height: 100,
-                    width: 100,
-                    child: Placeholder(),
-                  ),
+                : SizedBox(),
             ElevatedButton(
               onPressed: _pickImage,
               child: Text('Pick Image'),
             ),
-            SizedBox(height: 40),
+            SizedBox(
+              height: 40,
+            ),
             MaterialButton(
-              onPressed: submitData,
+              onPressed: widget.id.isNotEmpty ? updateData : createData,
               minWidth: double.infinity,
               height: 50,
               color: Colors.green.shade900,
               child: showProgressIndicator
-                  ? CircularProgressIndicator(color: Colors.white)
+                  ? CircularProgressIndicator(
+                      color: Colors.white,
+                    )
                   : Text(
                       'Submit',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w300),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w300),
                     ),
-            ),
+            )
           ],
         ),
       ),

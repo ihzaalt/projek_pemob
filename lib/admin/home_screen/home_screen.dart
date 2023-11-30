@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_firebase_crud_app/auth/login_page.dart';
@@ -48,56 +50,55 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Drawer buildSidebar() {
-  return Drawer(
-    child: ListView(
-      padding: EdgeInsets.zero,
-      children: <Widget>[
-        DrawerHeader(
-          decoration: BoxDecoration(
-            color: Colors.green.shade900,
-          ),
-          child: Text(
-            'Menu',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.green.shade900,
+            ),
+            child: Text(
+              'Menu',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+              ),
             ),
           ),
-        ),
-        ListTile(
-          title: Text('Kost'),
-          onTap: () {
-            setState(() {
-              _selectedPage = 0;
-              Navigator.pop(context);
-            });
-          },
-        ),
-        ListTile(
-          title: Text('Makanan'),
-          onTap: () {
-            setState(() {
-              _selectedPage = 1;
-              Navigator.pop(context);
-            });
-          },
-        ),
-        ListTile(
-          title: Text('Logout'),
-          onTap: () async {
-            await AuthService().signOut();
-            // Navigate to the login or home page after logout
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => LoginPage()),
-            );
-          },
-        ),
-      ],
-    ),
-  );
-}
-
+          ListTile(
+            title: Text('Kost'),
+            onTap: () {
+              setState(() {
+                _selectedPage = 0;
+                Navigator.pop(context);
+              });
+            },
+          ),
+          ListTile(
+            title: Text('Makanan'),
+            onTap: () {
+              setState(() {
+                _selectedPage = 1;
+                Navigator.pop(context);
+              });
+            },
+          ),
+          ListTile(
+            title: Text('Logout'),
+            onTap: () async {
+              await AuthService().signOut();
+              // Navigate to the login or home page after logout
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget buildKostPage() {
     return StreamBuilder(
@@ -133,7 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: EdgeInsets.symmetric(vertical: 41),
                 itemCount: streamSnapshot.data!.docs.length,
                 itemBuilder: ((context, index) {
-                  // Use MakananData.fromJson to convert Firestore data to MakananData
                   MakananData makananData = MakananData.fromJson(streamSnapshot.data!.docs[index].data() as Map<String, dynamic>);
                   return buildMakananTile(makananData);
                 }),
@@ -149,128 +149,150 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildKostTile(KostData kostData) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      tileColor: Colors.white,
-      shape: RoundedRectangleBorder(
+ Widget buildKostTile(KostData kostData) {
+  return InkWell(
+    onTap: () {
+      navigateToUpdateScreen(kostData);
+    },
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      margin: EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        side: BorderSide(color: Colors.grey.shade300),
+        border: Border.all(color: Colors.grey.shade300),
       ),
-      title: Text(
-        kostData.name,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-      ),
-      subtitle: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Rp ${kostData.price.toString()}',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
+          // Image berada di sebelah kiri
+          Container(
+            width: 100,
+            height: 100,
+            child: Image.network(
+              kostData.image,
+              fit: BoxFit.cover,
+            ),
           ),
-          Text(
-            kostData.description,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+          SizedBox(width: 10),
+          // Informasi lainnya berada di sebelah kanan
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  kostData.name,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Rp ${kostData.price.toString()}',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
+                ),
+                Text(
+                  kostData.description,
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        navigateToUpdateScreen(kostData);
+                      },
+                      icon: Icon(Icons.edit, color: Colors.blue, size: 21),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        await deleteData(kostData);
+                      },
+                      icon: Icon(Icons.delete, color: Colors.green.shade900, size: 21),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      leading: Image.network(
-        kostData.image,
-        width: 40,
-        height: 40,
-        fit: BoxFit.cover,
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            onPressed: () {
-              navigateToUpdateScreen(kostData);
-            },
-            icon: Icon(Icons.edit, color: Colors.blue, size: 21),
-          ),
-          IconButton(
-            onPressed: () async {
-              await deleteData(kostData);
-            },
-            icon: Icon(Icons.delete, color: Colors.green.shade900, size: 21),
-          ),
-        ],
-      ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget buildMakananTile(MakananData makananData) {
-    return ListTile(
-      title: Text(
-        makananData.name,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+  return InkWell(
+    onTap: () {
+      navigateToUpdateScreen(makananData);
+    },
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      margin: EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
       ),
-      subtitle: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Rp ${makananData.price.toString()}}',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
+          // Image berada di sebelah kiri
+          Container(
+            width: 100,
+            height: 100,
+            child: Image.network(
+              makananData.image,
+              fit: BoxFit.cover,
+            ),
           ),
-          Text(
-            makananData.description,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+          SizedBox(width: 10),
+          // Informasi lainnya berada di sebelah kanan
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  makananData.name,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Rp ${makananData.price.toString()}',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
+                ),
+                Text(
+                  makananData.description,
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        navigateToUpdateScreen(makananData);
+                      },
+                      icon: Icon(Icons.edit, color: Colors.blue, size: 21),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        await deleteData(makananData);
+                      },
+                      icon: Icon(Icons.delete, color: Colors.green.shade900, size: 21),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      leading: Image.network(
-        makananData.image,
-        width: 40,
-        height: 40,
-        fit: BoxFit.cover,
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            onPressed: () {
-              navigateToUpdateScreen(makananData);
-            },
-            icon: Icon(Icons.edit, color: Colors.blue, size: 21),
-          ),
-          IconButton(
-            onPressed: () async {
-              await deleteData(makananData);
-            },
-            icon: Icon(Icons.delete, color: Colors.green.shade900, size: 21),
-          ),
-        ],
-      ),
-    );
-  }
-
+    ),
+  );
+}
   void navigateToUpdateScreen(dynamic data) {
-    String id = data.id;
-    String collection = '';
-
-    if (data is KostData) {
-      collection = 'kosts';
-    } else if (data is MakananData) {
-      collection = 'makanans';
-    }
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => SendOrUpdateData(
-          id: id,
-          name: data.name,
-          price: data.price,
-          description: data.description,
-          image: data.image,
-          collection: collection,
-        ),
-      ),
-    );
-  }
-
-  Future<void> deleteData(dynamic data) async {
-  String id = data.id;
+  String imageName = data.image.split('/').last; // Extracting the image name from the URL
   String collection = '';
 
   if (data is KostData) {
@@ -279,8 +301,36 @@ class _HomeScreenState extends State<HomeScreen> {
     collection = 'makanans';
   }
 
-  final docData = FirebaseFirestore.instance.collection(collection).doc(id);
-  await docData.delete();
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(
+      builder: (context) => SendOrUpdateData(
+        id: data.id,
+        name: data.name,
+        price: data.price,
+        description: data.description,
+        image: data.image,
+        collection: collection,
+      ),
+    ),
+  );
 }
 
+
+Future<void> deleteData(dynamic data) async {
+  String imageName = data.image.split('/').last; // Extracting the image name from the URL
+  String collection = '';
+
+  if (data is KostData) {
+    collection = 'kosts';
+  } else if (data is MakananData) {
+    collection = 'makanans';
+  }
+
+  final docData = FirebaseFirestore.instance.collection(collection).where('image', isEqualTo: data.image);
+  await docData.get().then((querySnapshot) {
+    querySnapshot.docs.forEach((doc) {
+      doc.reference.delete();
+    });
+  });
+}
 }
