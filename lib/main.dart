@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_firebase_crud_app/screens/home_screen/home_screen.dart';
-import 'firebase_options.dart';
+import 'package:flutter_firebase_crud_app/user/user_home_screen.dart';
+
+import 'services/firebase_options.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Firebase CRUD App',
-      home: HomeScreen(),
+      home: UserHomeScreen(), // Make sure LoginPage is a valid widget class
     );
   }
 }
