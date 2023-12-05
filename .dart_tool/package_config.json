@@ -230,6 +230,12 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "get",
+      "rootUri": "file:///C:/Users/AMD/AppData/Local/Pub/Cache/hosted/pub.dev/get-4.6.6",
+      "packageUri": "lib/",
+      "languageVersion": "2.15"
+    },
+    {
       "name": "http",
       "rootUri": "file:///C:/Users/AMD/AppData/Local/Pub/Cache/hosted/pub.dev/http-1.1.0",
       "packageUri": "lib/",
@@ -500,7 +506,7 @@
       "languageVersion": "2.12"
     }
   ],
-  "generated": "2023-11-30T20:46:12.833915Z",
+  "generated": "2023-12-05T13:20:32.932018Z",
   "generator": "pub",
   "generatorVersion": "3.2.1"
 }

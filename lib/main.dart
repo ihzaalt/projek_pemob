@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Firebase CRUD App',
+      title: 'KostEat',
       home: UserHomeScreen(), // Make sure LoginPage is a valid widget class
     );
   }

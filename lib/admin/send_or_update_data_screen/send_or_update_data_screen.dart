@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase_crud_app/admin/home_screen/home_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_firebase_crud_app/models/kost_data.dart';
@@ -82,8 +83,10 @@ class _SendOrUpdateDataState extends State<SendOrUpdateData> {
       String newDescription = descriptionController.text;
       String newImage = '';
 
+      int currentTime = Timestamp.now().millisecondsSinceEpoch;
+
       if (_image != null) {
-        String imagePath = 'your_storage_path/${DateTime.now().millisecondsSinceEpoch}';
+        String imagePath = 'your_storage_path/$currentTime';
         UploadTask task = FirebaseStorage.instance.ref().child(imagePath).putFile(_image!);
 
         TaskSnapshot snapshot = await task;
@@ -94,19 +97,19 @@ class _SendOrUpdateDataState extends State<SendOrUpdateData> {
 
       if (widget.collection == 'kosts') {
         newData = KostData(
+          id: currentTime.toString(),
           name: newName,
           price: newPrice,
           description: newDescription,
           image: newImage,
-          id: '',
         );
       } else if (widget.collection == 'makanans') {
         newData = MakananData(
+          id: currentTime.toString(),
           name: newName,
           price: newPrice,
           description: newDescription,
           image: newImage,
-          id: '',
         );
       }
 
@@ -119,51 +122,63 @@ class _SendOrUpdateDataState extends State<SendOrUpdateData> {
   }
 
 
-  Future<void> updateData() async {
-    try {
-      String newName = nameController.text;
-      String newPrice = priceController.text;
-      String newDescription = descriptionController.text;
-      String newImage = widget.image ?? '';
+Future<void> updateData() async {
+  try {
+    String newName = nameController.text;
+    String newPrice = priceController.text;
+    String newDescription = descriptionController.text;
+    String newImage = '';
 
-      if (_image != null) {
-        String imagePath = 'your_storage_path/${DateTime.now().millisecondsSinceEpoch}';
-        UploadTask task = FirebaseStorage.instance.ref().child(imagePath).putFile(_image!);
+    String currentTimestamp = DateTime.now().millisecondsSinceEpoch.toString();
 
-        TaskSnapshot snapshot = await task;
-        newImage = await snapshot.ref.getDownloadURL() ?? '';
-      }
+    if (_image != null) {
+      String imagePath = 'your_storage_path/$currentTimestamp';
+      UploadTask task = FirebaseStorage.instance.ref().child(imagePath).putFile(_image!);
 
-      dynamic newData;
-
-      if (widget.collection == 'kosts') {
-        newData = KostData(
-          name: newName,
-          price: newPrice,
-          description: newDescription,
-          image: newImage,
-          id: widget.id.isNotEmpty ? widget.id : '',
-        );
-      } else if (widget.collection == 'makanans') {
-        newData = MakananData(
-          name: newName,
-          price: newPrice,
-          description: newDescription,
-          image: newImage,
-          id: widget.id.isNotEmpty ? widget.id : '',
-        );
-      }
-
-      if (widget.id.isNotEmpty) {
-        final dataDoc = FirebaseFirestore.instance.collection(widget.collection!).doc(widget.id);
-        await dataDoc.update(newData.toJson());
-      }
-
-      clearFormAndNavigateBack();
-    } catch (e) {
-      print('Error updating data: $e');
+      TaskSnapshot snapshot = await task;
+      newImage = await snapshot.ref.getDownloadURL() ?? '';
     }
+
+    dynamic newData;
+
+    if (widget.collection == 'kosts') {
+      newData = KostData(
+        name: newName,
+        price: newPrice,
+        description: newDescription,
+        image: newImage,
+        id: currentTimestamp,
+      );
+    } else if (widget.collection == 'makanans') {
+      newData = MakananData(
+        name: newName,
+        price: newPrice,
+        description: newDescription,
+        image: newImage,
+        id: currentTimestamp,
+      );
+    }
+
+    await FirebaseFirestore.instance.collection(widget.collection!).add(newData.toJson());
+
+    if (widget.id.isNotEmpty) {
+
+      QuerySnapshot oldDocs = await FirebaseFirestore.instance.collection(widget.collection!)
+          .where('id', isEqualTo: widget.id)
+          .get();
+
+      oldDocs.docs.forEach((oldDoc) {
+        oldDoc.reference.delete();
+      });
+    }
+
+    clearFormAndNavigateBack();
+  } catch (e) {
+    print('Error updating data: $e');
   }
+}
+
+
 
   void clearFormAndNavigateBack() {
     nameController.clear();
@@ -173,8 +188,14 @@ class _SendOrUpdateDataState extends State<SendOrUpdateData> {
       _image = null;
       showProgressIndicator = false;
     });
-    Navigator.pop(context);
+    Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => HomeScreen(), // Replace HomeScreen with the actual class for your home screen
+    ),
+  );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -199,6 +220,12 @@ class _SendOrUpdateDataState extends State<SendOrUpdateData> {
             ),
             TextField(
               controller: nameController,
+              onChanged: (value) {
+                setState(() {
+                  // Update the name when the text changes
+                  widget.name = value;
+                });
+              },
               decoration: InputDecoration(hintText: ''),
             ),
             SizedBox(
@@ -210,6 +237,12 @@ class _SendOrUpdateDataState extends State<SendOrUpdateData> {
             ),
             TextField(
               controller: priceController,
+              onChanged: (value) {
+                setState(() {
+                  // Update the price when the text changes
+                  widget.price = value;
+                });
+              },
               decoration: InputDecoration(hintText: ''),
             ),
             SizedBox(
@@ -221,8 +254,13 @@ class _SendOrUpdateDataState extends State<SendOrUpdateData> {
             ),
             TextField(
               controller: descriptionController,
-              decoration:
-                  InputDecoration(hintText: ''),
+              onChanged: (value) {
+                setState(() {
+                  // Update the description when the text changes
+                  widget.description = value;
+                });
+              },
+              decoration: InputDecoration(hintText: ''),
             ),
             SizedBox(
               height: 20,

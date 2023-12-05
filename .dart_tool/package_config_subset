@@ -138,6 +138,10 @@ flutter_plugin_android_lifecycle
 2.19
 file:///C:/Users/AMD/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.17/
 file:///C:/Users/AMD/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.17/lib/
+get
+2.15
+file:///C:/Users/AMD/AppData/Local/Pub/Cache/hosted/pub.dev/get-4.6.6/
+file:///C:/Users/AMD/AppData/Local/Pub/Cache/hosted/pub.dev/get-4.6.6/lib/
 http
 3.0
 file:///C:/Users/AMD/AppData/Local/Pub/Cache/hosted/pub.dev/http-1.1.0/
@@ -310,6 +314,10 @@ xdg_directories
 2.19
 file:///C:/Users/AMD/AppData/Local/Pub/Cache/hosted/pub.dev/xdg_directories-1.0.3/
 file:///C:/Users/AMD/AppData/Local/Pub/Cache/hosted/pub.dev/xdg_directories-1.0.3/lib/
+flutter_firebase_crud_app
+2.12
+file:///C:/Users/AMD/Documents/GitHub/projek_pemob/
+file:///C:/Users/AMD/Documents/GitHub/projek_pemob/lib/
 sky_engine
 3.2
 file:///C:/src/flutter/bin/cache/pkg/sky_engine/
@@ -326,8 +334,4 @@ flutter_web_plugins
 3.2
 file:///C:/src/flutter/packages/flutter_web_plugins/
 file:///C:/src/flutter/packages/flutter_web_plugins/lib/
-flutter_firebase_crud_app
-2.12
-file:///C:/xampp/htdocs/flutter_firebase_crud_app-main/
-file:///C:/xampp/htdocs/flutter_firebase_crud_app-main/lib/
 2

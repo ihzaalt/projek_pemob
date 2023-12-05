@@ -2,15 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_firebase_crud_app/auth/login_page.dart';
 import 'package:flutter_firebase_crud_app/models/kost_data.dart';
 import 'package:flutter_firebase_crud_app/models/makanan_data.dart';
 import 'package:flutter_firebase_crud_app/admin/send_or_update_data_screen/send_or_update_data_screen.dart';
 import 'package:flutter_firebase_crud_app/services/auth_service.dart';
+import 'package:flutter_firebase_crud_app/user/user_home_screen.dart';
 
 void main() {
   runApp(MaterialApp(
-    title: 'Your App',
+    title: 'KostEat',
     home: HomeScreen(),
   ));
 }
@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Navigate to the login or home page after logout
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
+                MaterialPageRoute(builder: (context) => UserHomeScreen()),
               );
             },
           ),
@@ -154,64 +154,71 @@ class _HomeScreenState extends State<HomeScreen> {
     onTap: () {
       navigateToUpdateScreen(kostData);
     },
-    child: Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    child: Card(
       margin: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image berada di sebelah kiri
+          // Image on the left
           Container(
             width: 100,
             height: 100,
-            child: Image.network(
-              kostData.image,
-              fit: BoxFit.cover,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                bottomLeft: Radius.circular(10),
+              ),
+              image: DecorationImage(
+                image: NetworkImage(kostData.image),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           SizedBox(width: 10),
-          // Informasi lainnya berada di sebelah kanan
+          // Other information on the right
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  kostData.name,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  'Rp ${kostData.price.toString()}',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
-                ),
-                Text(
-                  kostData.description,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        navigateToUpdateScreen(kostData);
-                      },
-                      icon: Icon(Icons.edit, color: Colors.blue, size: 21),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        await deleteData(kostData);
-                      },
-                      icon: Icon(Icons.delete, color: Colors.green.shade900, size: 21),
-                    ),
-                  ],
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    kostData.name,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    'Rp ${kostData.price.toString()}',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
+                  ),
+                  Text(
+                    kostData.description,
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          navigateToUpdateScreen(kostData);
+                        },
+                        icon: Icon(Icons.edit, color: Colors.blue, size: 21),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          await deleteData(kostData);
+                        },
+                        icon: Icon(Icons.delete, color: Colors.green.shade900, size: 21),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -219,6 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   );
 }
+
 
 
   Widget buildMakananTile(MakananData makananData) {
@@ -226,64 +234,71 @@ class _HomeScreenState extends State<HomeScreen> {
     onTap: () {
       navigateToUpdateScreen(makananData);
     },
-    child: Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    child: Card(
       margin: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image berada di sebelah kiri
+          // Image on the left
           Container(
             width: 100,
             height: 100,
-            child: Image.network(
-              makananData.image,
-              fit: BoxFit.cover,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                bottomLeft: Radius.circular(10),
+              ),
+              image: DecorationImage(
+                image: NetworkImage(makananData.image),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           SizedBox(width: 10),
-          // Informasi lainnya berada di sebelah kanan
+          // Other information on the right
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  makananData.name,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  'Rp ${makananData.price.toString()}',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
-                ),
-                Text(
-                  makananData.description,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        navigateToUpdateScreen(makananData);
-                      },
-                      icon: Icon(Icons.edit, color: Colors.blue, size: 21),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        await deleteData(makananData);
-                      },
-                      icon: Icon(Icons.delete, color: Colors.green.shade900, size: 21),
-                    ),
-                  ],
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    makananData.name,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    'Rp ${makananData.price.toString()}',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
+                  ),
+                  Text(
+                    makananData.description,
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          navigateToUpdateScreen(makananData);
+                        },
+                        icon: Icon(Icons.edit, color: Colors.blue, size: 21),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          await deleteData(makananData);
+                        },
+                        icon: Icon(Icons.delete, color: Colors.green.shade900, size: 21),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -291,7 +306,10 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   );
 }
+
+
   void navigateToUpdateScreen(dynamic data) {
+    
   String imageName = data.image.split('/').last; // Extracting the image name from the URL
   String collection = '';
 
